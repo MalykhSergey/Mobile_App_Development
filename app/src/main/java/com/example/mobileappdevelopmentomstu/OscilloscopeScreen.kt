@@ -1,74 +1,63 @@
 package com.example.mobileappdevelopmentomstu
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.PointMode
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 
 @Composable
 fun OscilloscopeScreen(
-    functions: List<SineWave>,
-    samplingRate: Float,
+    points: MutableList<Offset>,
     modifier: Modifier = Modifier
 ) {
-    val infiniteTransition = rememberInfiniteTransition()
+    var timerState by remember { mutableStateOf(1) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(100)
+            timerState = -timerState
 
-    val timeOffset by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = LinearEasing)
-        )
-    )
-
-    Canvas(modifier = modifier.background(Color(0xFF463F3F))) {
-        val width = size.width
-        val height = size.height / 2
-
-        val points = generateSineWavePoints(
-            functions,
-            width.toInt(),
-            height.toInt(),
-            timeOffset,
-            samplingRate
-        )
-
-        val path = Path().apply {
-            points.forEachIndexed { index, point ->
-                if (index == 0) {
-                    moveTo(point.x, point.y)
-                } else {
-                    lineTo(point.x, point.y)
-                }
-            }
         }
+    }
+    Canvas(
+        modifier = modifier
+            .padding(10.dp)
+            .background(Color(0xFF463F3F))
+    ) {
+        getSineWavePoints(points, timerState)
 
-        drawPath(
-            path = path,
-            color = Color(0xFFFFC107).copy(alpha = 0.2f),
-            style = Stroke(width = 12f),
+        drawPoints(
+            points = points,
+            strokeWidth = 4f,
+            pointMode = PointMode.Polygon,
+            color = Color(0xFFFFFB07),
             blendMode = BlendMode.SrcOver
         )
-        drawPath(
-            path = path,
+
+        drawPoints(
+            points = points,
+            strokeWidth = 8f,
+            pointMode = PointMode.Polygon,
             color = Color(0xFFFFC107).copy(alpha = 0.5f),
-            style = Stroke(width = 6f),
             blendMode = BlendMode.SrcOver
         )
-        drawPath(
-            path = path,
-            color = Color(0xFFFFC107),
-            style = Stroke(width = 2f)
+        drawPoints(
+            points = points,
+            strokeWidth = 12f,
+            pointMode = PointMode.Polygon,
+            color = Color(0xFFFFC107).copy(alpha = 0.2f),
+            blendMode = BlendMode.SrcOver
         )
     }
 }
