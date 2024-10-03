@@ -22,7 +22,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -52,7 +51,7 @@ var sinWavesGlobal = mutableStateListOf(
 )
 
 lateinit var settings: SharedPreferences
-var profiles =  mutableStateListOf(Profile("Default", sinWavesGlobal))
+var profiles = mutableStateListOf(Profile("Default", sinWavesGlobal))
 
 
 class MainActivity : ComponentActivity() {
@@ -116,13 +115,27 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable("profiles") {
-                        Profiles(profiles) { name, index ->
-                            profiles[index] = profiles[index].copy(name = name)
-                        }
+                        Profiles(
+                            navController,
+                            profiles,
+                            { name, index ->
+                                profiles[index] = profiles[index].copy(name = name)
+                            },
+                            { profiles.add(Profile("Default")) },
+                            { index -> profiles.removeAt(index) })
                     }
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        val prefEditor: SharedPreferences.Editor = settings.edit()
+        val builder = GsonBuilder()
+        val gson = builder.create()
+        prefEditor.putString("Profiles", gson.toJson(profiles))
+        prefEditor.apply()
     }
 }
 
@@ -143,15 +156,11 @@ fun MainScreen(
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             DropdownMenuItem(
-                onClick = { navController.navigate("profiles") },
+                onClick = {
+                    expanded = false
+                    navController.navigate("profiles")
+                },
                 text = { Text("Загрузить") })
-            DropdownMenuItem(onClick = {
-                val prefEditor: SharedPreferences.Editor = settings.edit()
-                val builder = GsonBuilder()
-                val gson = builder.create()
-                prefEditor.putString("Profiles", gson.toJson(profiles))
-                prefEditor.apply()
-            }, text = { Text("Сохранить") })
         }
     }
     Column(
