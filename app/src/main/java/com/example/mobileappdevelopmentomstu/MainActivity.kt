@@ -52,6 +52,7 @@ var sinWavesGlobal = mutableStateListOf(
 
 lateinit var settings: SharedPreferences
 var profiles = mutableStateListOf(Profile("Default", sinWavesGlobal))
+var currentProfile = profiles.first()
 
 
 class MainActivity : ComponentActivity() {
@@ -129,8 +130,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onStop() {
+        super.onStop()
+        if (profiles.isNotEmpty()){
+            currentProfile.sineWaves = sinWavesGlobal
+        }
         val prefEditor: SharedPreferences.Editor = settings.edit()
         val builder = GsonBuilder()
         val gson = builder.create()

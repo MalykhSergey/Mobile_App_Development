@@ -14,7 +14,7 @@ import androidx.navigation.NavController
 
 data class Profile(
     var name: String,
-    val sineWaves: MutableList<SineWave> = mutableListOf<SineWave>()
+    var sineWaves: MutableList<SineWave> = mutableListOf<SineWave>()
 )
 
 @Composable
@@ -33,8 +33,10 @@ fun Profiles(
                     onValueChange = { onProfileChange(it, index) }, Modifier.width(200.dp)
                 )
                 Button(onClick = {
+                    currentProfile.sineWaves = sinWavesGlobal.toMutableList()
                     sinWavesGlobal.clear()
                     sinWavesGlobal.addAll(profiles[index].sineWaves)
+                    currentProfile = profiles[index]
                     navController.navigate("main")
                 }, Modifier.width(100.dp)) { Text("Open") }
                 Button(
